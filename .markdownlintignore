@@ -1,1 +1,6 @@
+CHANGELOG.md
+docs/core/proto-docs.md
 docs/node_modules
+x/auth/atlas
+x/bank/atlas
+x/evidence/atlas
