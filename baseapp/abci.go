@@ -1,6 +1,7 @@
 package baseapp
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"fmt"
@@ -11,7 +12,6 @@ import (
 	"github.com/cockroachdb/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	"github.com/cosmos/gogoproto/proto"
 	"google.golang.org/grpc/codes"
 	grpcstatus "google.golang.org/grpc/status"
 
@@ -120,8 +120,11 @@ func (app *BaseApp) InitChain(req *abci.RequestInitChain) (*abci.ResponseInitCha
 		sort.Sort(abci.ValidatorUpdates(res.Validators))
 
 		for i := range res.Validators {
-			if !proto.Equal(&res.Validators[i], &req.Validators[i]) {
-				req.Validators[i].Power = req.Validators[i].Power / sdk.DefaultPowerReduction.Int64()
+			req.Validators[i].Power = req.Validators[i].Power / sdk.DefaultPowerReduction.Int64()
+			reqPubKey := req.Validators[i].PubKey.GetEd25519()
+			resPubKey := res.Validators[i].PubKey.GetEd25519()
+			//if !proto.Equal(&res.Validators[i], &req.Validators[i]) {
+			if !bytes.Equal(resPubKey, reqPubKey) {
 				return nil, fmt.Errorf("genesisValidators[%d] != req.Validators[%d] ", i, i)
 			}
 		}
